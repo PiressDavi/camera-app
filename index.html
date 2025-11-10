@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tirar Foto</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .camera-box {
+      width: 200px;
+      height: 200px;
+      border: 3px dashed #aaa;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: #fff;
+    }
+
+    .camera-box:hover {
+      border-color: #333;
+      background-color: #f0f0f0;
+    }
+
+    .camera-icon {
+      font-size: 60px;
+      color: #666;
+    }
+
+    #preview {
+      margin-top: 20px;
+      max-width: 90%;
+      border-radius: 10px;
+      display: none;
+    }
+
+    #send-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      display: none;
+    }
+
+    #send-btn:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="camera-box" id="cameraBox">
+    <span class="camera-icon">📷</span>
+  </div>
+
+  <input type="file" accept="image/*" capture="environment" id="cameraInput">
+
+  <img id="preview" alt="Prévia da foto" />
+  <button id="send-btn">Enviar Foto</button>
+
+  <script>
+    const cameraBox = document.getElementById('cameraBox');
+    const cameraInput = document.getElementById('cameraInput');
+    const preview = document.getElementById('preview');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Ao clicar no quadrado, abre a câmera
+    cameraBox.addEventListener('click', () => {
+      cameraInput.click();
+    });
+
+    // Quando o usuário tira uma foto
+    cameraInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const imageUrl = URL.createObjectURL(file);
+        preview.src = imageUrl;
+        preview.style.display = 'block';
+        sendBtn.style.display = 'inline-block';
+      }
+    });
+
+    // Botão de enviar (aqui apenas simula o envio)
+    sendBtn.addEventListener('click', () => {
+      alert('Foto enviada com sucesso!');
+      // Aqui você pode integrar com o Supabase, EmailJS, etc.
+    });
+  </script>
+
+</body>
+</html>
