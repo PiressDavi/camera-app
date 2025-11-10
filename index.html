@@ -1,131 +1,152 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tirar Foto</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            height: 100vh;
-            margin: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tirar Foto</title>
 
-        .camera-box {
-            width: 200px;
-            height: 200px;
-            border: 3px dashed #aaa;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: #fff;
-        }
+  <!-- Importa o SDK do Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        .camera-box:hover {
-            border-color: #333;
-            background-color: #f0f0f0;
-        }
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      height: 100vh;
+      margin: 0;
+    }
 
-        .camera-icon {
-            font-size: 60px;
-            color: #666;
-        }
+    .camera-box {
+      width: 200px;
+      height: 200px;
+      border: 3px dashed #aaa;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: #fff;
+    }
 
-        #preview {
-            margin-top: 20px;
-            max-width: 90%;
-            border-radius: 10px;
-            display: none;
-        }
+    .camera-box:hover {
+      border-color: #333;
+      background-color: #f0f0f0;
+    }
 
-        #send-btn {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            display: none;
-        }
+    .camera-icon {
+      font-size: 60px;
+      color: #666;
+    }
 
-        #send-btn:hover {
-            background-color: #0056b3;
-        }
+    #preview {
+      margin-top: 20px;
+      max-width: 90%;
+      border-radius: 10px;
+      display: none;
+    }
 
-        input[type="file"] {
-            display: none;
-        }
-    </style>
+    #send-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      display: none;
+      transition: 0.3s ease;
+    }
+
+    #send-btn:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    /* Loader (opcional) */
+    #loading {
+      display: none;
+      margin-top: 15px;
+      font-size: 16px;
+      color: #555;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="camera-box" id="cameraBox">
+    <span class="camera-icon">📷</span>
+  </div>
 
-    <div class="camera-box" id="cameraBox">
-        <span class="camera-icon">📷</span>
-    </div>
+  <input type="file" accept="image/*" capture="environment" id="cameraInput">
 
-    <input type="file" accept="image/*" capture="environment" id="cameraInput">
+  <img id="preview" alt="Prévia da foto" />
+  <button id="send-btn">Enviar Foto</button>
+  <div id="loading">Enviando foto... ⏳</div>
 
-    <img id="preview" alt="Prévia da foto" />
-    <button id="send-btn">Enviar Foto</button>
+  <script>
+    const cameraBox = document.getElementById('cameraBox');
+    const cameraInput = document.getElementById('cameraInput');
+    const preview = document.getElementById('preview');
+    const sendBtn = document.getElementById('send-btn');
+    const loading = document.getElementById('loading');
 
-    <script>
-        const cameraBox = document.getElementById('cameraBox');
-        const cameraInput = document.getElementById('cameraInput');
-        const preview = document.getElementById('preview');
-        const sendBtn = document.getElementById('send-btn');
+    // 🔑 Configuração do Supabase
+    const SUPABASE_URL = "https://czhtdbjkscsqsrgawobg.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aHRkYmprc2NzcXNyZ2F3b2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTg4NjQsImV4cCI6MjA3ODM3NDg2NH0.yPH_BrOGNbf-tZMx2zk0_xEcm0K9fyhUo2A8Ug6i3ms";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Ao clicar no quadrado, abre a câmera
-        cameraBox.addEventListener('click', () => {
-            cameraInput.click();
-        });
+    // 📸 Ao clicar no quadrado, abre a câmera
+    cameraBox.addEventListener('click', () => {
+      cameraInput.click();
+    });
 
-        // Quando o usuário tira uma foto
-        cameraInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const imageUrl = URL.createObjectURL(file);
-                preview.src = imageUrl;
-                preview.style.display = 'block';
-                sendBtn.style.display = 'inline-block';
-            }
-        });
+    // 🖼️ Mostra prévia da foto
+    cameraInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const imageUrl = URL.createObjectURL(file);
+        preview.src = imageUrl;
+        preview.style.display = 'block';
+        sendBtn.style.display = 'inline-block';
+      }
+    });
 
-        // Botão de enviar (aqui apenas simula o envio)
-        sendBtn.addEventListener('click', () => {
-            // Upload da imagem pro Supabase
-            const SUPABASE_URL = "https://czhtdbjkscsqsrgawobg.supabase.co";
-            const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aHRkYmprc2NzcXNyZ2F3b2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTg4NjQsImV4cCI6MjA3ODM3NDg2NH0.yPH_BrOGNbf-tZMx2zk0_xEcm0K9fyhUo2A8Ug6i3ms";
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // ☁️ Envia a foto para o Supabase
+    sendBtn.addEventListener('click', async () => {
+      if (!cameraInput.files[0]) return alert('Nenhuma foto tirada!');
 
-            sendBtn.addEventListener('click', async () => {
-                if (!cameraInput.files[0]) return alert('Nenhuma foto tirada!');
-                const file = cameraInput.files[0];
-                const fileName = `${Date.now()}_${file.name}`;
+      const file = cameraInput.files[0];
+      const fileName = `${Date.now()}_${file.name}`;
 
-                const { data, error } = await supabase.storage.from('fotos-convidados').upload(fileName, file);
-                if (error) {
-                    alert('Erro ao enviar a foto 😔');
-                    console.error(error);
-                } else {
-                    alert('Foto enviada com sucesso 🎉');
-                }
-            });
+      // Mostra loader
+      sendBtn.style.display = 'none';
+      loading.style.display = 'block';
 
-        });
-    </script>
+      const { data, error } = await supabase.storage
+        .from('fotos-convidados')
+        .upload(fileName, file);
 
+      loading.style.display = 'none';
+
+      if (error) {
+        alert('Erro ao enviar a foto 😔');
+        console.error(error);
+        sendBtn.style.display = 'inline-block';
+      } else {
+        alert('Foto enviada com sucesso 🎉');
+        preview.style.display = 'none';
+        cameraInput.value = '';
+      }
+    });
+  </script>
 </body>
-
 </html>
