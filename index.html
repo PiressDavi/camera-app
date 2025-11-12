@@ -18,6 +18,13 @@
       background-color: #f9f9f9;
       height: 100vh;
       margin: 0;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: #333;
+      margin-bottom: 20px;
     }
 
     .camera-box {
@@ -71,17 +78,24 @@
       display: none;
     }
 
-    /* Loader (opcional) */
     #loading {
       display: none;
       margin-top: 15px;
       font-size: 16px;
       color: #555;
     }
+
+    footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #555;
+    }
   </style>
 </head>
 
 <body>
+  <h1>🎉 Festa de Confraternização Cawe - 2025 🎉</h1>
+
   <div class="camera-box" id="cameraBox">
     <span class="camera-icon">📷</span>
   </div>
@@ -91,6 +105,8 @@
   <img id="preview" alt="Prévia da foto" />
   <button id="send-btn">Enviar Foto</button>
   <div id="loading">Enviando foto... ⏳</div>
+
+  <footer>Desenvolvido por: <strong>Sempre Juntos Lembranças</strong></footer>
 
   <script>
     const cameraBox = document.getElementById('cameraBox');
@@ -127,7 +143,6 @@
       const file = cameraInput.files[0];
       const fileName = `${Date.now()}_${file.name}`;
 
-      // Mostra loader
       sendBtn.style.display = 'none';
       loading.style.display = 'block';
 
