@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tirar Foto</title>
 
-  <!-- Importa o SDK do Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -23,7 +22,6 @@
 
     h1 {
       font-size: 22px;
-      color: #333;
       margin-bottom: 20px;
     }
 
@@ -36,18 +34,11 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.3s ease;
-      background-color: #fff;
-    }
-
-    .camera-box:hover {
-      border-color: #333;
-      background-color: #f0f0f0;
+      background: #fff;
     }
 
     .camera-icon {
       font-size: 60px;
-      color: #666;
     }
 
     #preview {
@@ -60,65 +51,42 @@
     #send-btn {
       margin-top: 15px;
       padding: 10px 20px;
-      font-size: 16px;
       border: none;
       border-radius: 8px;
-      background-color: #007bff;
+      background: #007bff;
       color: white;
       cursor: pointer;
       display: none;
-      transition: 0.3s ease;
     }
 
-    #send-btn:hover {
-      background-color: #0056b3;
+    #loading {
+      margin-top: 15px;
+      display: none;
     }
 
     input[type="file"] {
       display: none;
     }
-
-    #loading {
-      display: none;
-      margin-top: 15px;
-      font-size: 16px;
-      color: #555;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 14px;
-      color: #555;
-    }
   </style>
 </head>
 
 <body>
-  <h1>🎉 Fotos Polaroid - Seu Próximo Evento está Aqui 🎉</h1>
+  <h1>📸 Tire sua foto</h1>
 
   <div class="camera-box" id="cameraBox">
     <span class="camera-icon">📷</span>
   </div>
 
-  <input type="file" accept="image/*" capture="environment" id="cameraInput">
+  <input
+    type="file"
+    accept="image/*"
+    capture="environment"
+    id="cameraInput"
+  />
 
-  <img id="preview" alt="Prévia da foto" />
+  <img id="preview">
   <button id="send-btn">Enviar Foto</button>
-  <div id="loading">Enviando foto... ⏳</div>
-
-  <footer>
-  Desenvolvido por: 
-  <strong>
-    <a 
-      href="https://wa.me/5511947853999" 
-      target="_blank" 
-      style="color: inherit; text-decoration: none;"
-    >
-      Sempre Juntos SP - (11) 94785-3999
-    </a>
-  </strong>
-</footer>
-
+  <div id="loading">Enviando foto...</div>
 
   <script>
     const cameraBox = document.getElementById('cameraBox');
@@ -127,46 +95,55 @@
     const sendBtn = document.getElementById('send-btn');
     const loading = document.getElementById('loading');
 
-    // 🔑 Configuração do Supabase
+    // 🔑 SUPABASE
     const SUPABASE_URL = "https://czhtdbjkscsqsrgawobg.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aHRkYmprc2NzcXNyZ2F3b2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTg4NjQsImV4cCI6MjA3ODM3NDg2NH0.yPH_BrOGNbf-tZMx2zk0_xEcm0K9fyhUo2A8Ug6i3ms";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 📸 Ao clicar no quadrado, abre a câmera
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    // 📸 Abrir câmera
     cameraBox.addEventListener('click', () => {
       cameraInput.click();
     });
 
-    // 🖼️ Mostra prévia da foto
-    cameraInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const imageUrl = URL.createObjectURL(file);
-        preview.src = imageUrl;
-        preview.style.display = 'block';
-        sendBtn.style.display = 'inline-block';
-      }
+    // 👀 Preview
+    cameraInput.addEventListener('change', () => {
+      const file = cameraInput.files[0];
+      if (!file) return;
+
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      sendBtn.style.display = 'inline-block';
     });
 
-    // ☁️ Envia a foto para o Supabase
+    // ☁️ Upload
     sendBtn.addEventListener('click', async () => {
-      if (!cameraInput.files[0]) return alert('Nenhuma foto tirada!');
-
       const file = cameraInput.files[0];
-      const fileName = `${Date.now()}_${file.name}`;
+      if (!file) {
+        alert('Nenhuma foto selecionada');
+        return;
+      }
 
       sendBtn.style.display = 'none';
       loading.style.display = 'block';
 
-      const { data, error } = await supabase.storage
+      const fileName = `${Date.now()}.jpg`;
+
+      const { error } = await supabaseClient.storage
         .from('fotos-convidados')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          contentType: file.type,
+          upsert: false
+        });
 
       loading.style.display = 'none';
 
       if (error) {
-        alert('Erro ao enviar a foto 😔');
         console.error(error);
+        alert('Erro ao enviar a foto');
         sendBtn.style.display = 'inline-block';
       } else {
         alert('Foto enviada com sucesso 🎉');
@@ -177,8 +154,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
