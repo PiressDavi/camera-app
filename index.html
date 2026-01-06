@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tirar Foto</title>
+  <title>Enviar Foto</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -51,8 +51,8 @@
     button {
       margin-top: 15px;
       padding: 10px 20px;
-      border: none;
       border-radius: 8px;
+      border: none;
       cursor: pointer;
       font-size: 15px;
     }
@@ -66,7 +66,6 @@
     #whatsapp-btn {
       background: #25d366;
       color: white;
-      display: none;
     }
 
     #loading {
@@ -82,23 +81,27 @@
 </head>
 
 <body>
-  <h1>📸 Tire sua foto</h1>
+  <h1>📸 Envie sua foto do evento</h1>
 
   <div class="camera-box" id="cameraBox">
     <span class="camera-icon">📷</span>
   </div>
 
+  <!-- câmera OU galeria -->
   <input
     type="file"
     accept="image/*"
-    capture="environment"
     id="cameraInput"
   />
 
   <img id="preview">
 
   <button id="send-btn">Enviar para o evento</button>
-  <button id="whatsapp-btn">Enviar pelo WhatsApp</button>
+
+  <!-- WhatsApp SEM LIMITAÇÃO -->
+  <button id="whatsapp-btn">
+    Enviar pelo WhatsApp (câmera ou galeria)
+  </button>
 
   <div id="loading">Enviando foto...</div>
 
@@ -120,7 +123,7 @@
       SUPABASE_KEY
     );
 
-    // 📸 Abrir câmera
+    // 📸 Abrir câmera OU galeria
     cameraBox.addEventListener('click', () => {
       cameraInput.click();
     });
@@ -133,7 +136,6 @@
       preview.src = URL.createObjectURL(file);
       preview.style.display = 'block';
       sendBtn.style.display = 'inline-block';
-      whatsappBtn.style.display = 'inline-block';
     });
 
     // ☁️ Enviar para Supabase
@@ -142,7 +144,6 @@
       if (!file) return;
 
       sendBtn.style.display = 'none';
-      whatsappBtn.style.display = 'none';
       loading.style.display = 'block';
 
       const fileName = `${Date.now()}.jpg`;
@@ -150,8 +151,7 @@
       const { error } = await supabaseClient.storage
         .from('fotos-convidados')
         .upload(fileName, file, {
-          contentType: file.type,
-          upsert: false
+          contentType: file.type
         });
 
       loading.style.display = 'none';
@@ -160,21 +160,20 @@
         console.error(error);
         alert('Erro ao enviar a foto');
         sendBtn.style.display = 'inline-block';
-        whatsappBtn.style.display = 'inline-block';
       } else {
         alert('Foto enviada com sucesso 🎉');
         resetar();
       }
     });
 
-    // 📲 Enviar pelo WhatsApp
+    // 📲 WhatsApp (galeria OU câmera)
     whatsappBtn.addEventListener('click', () => {
       const texto = encodeURIComponent(
         'Oi! Segue minha foto do evento 📸'
       );
 
       window.open(
-        `https://wa.me/5511947853999?text=${texto}`,
+        'https://wa.me/5511947853999?text=' + texto,
         '_blank'
       );
     });
@@ -183,7 +182,6 @@
       preview.style.display = 'none';
       cameraInput.value = '';
       sendBtn.style.display = 'none';
-      whatsappBtn.style.display = 'none';
     }
   </script>
 </body>
