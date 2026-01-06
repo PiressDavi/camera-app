@@ -48,20 +48,31 @@
       display: none;
     }
 
-    #send-btn {
+    button {
       margin-top: 15px;
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    #send-btn {
       background: #007bff;
       color: white;
-      cursor: pointer;
+      display: none;
+    }
+
+    #whatsapp-btn {
+      background: #25d366;
+      color: white;
       display: none;
     }
 
     #loading {
-      margin-top: 15px;
+      margin-top: 10px;
       display: none;
+      color: #555;
     }
 
     input[type="file"] {
@@ -85,7 +96,10 @@
   />
 
   <img id="preview">
-  <button id="send-btn">Enviar Foto</button>
+
+  <button id="send-btn">Enviar para o evento</button>
+  <button id="whatsapp-btn">Enviar pelo WhatsApp</button>
+
   <div id="loading">Enviando foto...</div>
 
   <script>
@@ -93,11 +107,13 @@
     const cameraInput = document.getElementById('cameraInput');
     const preview = document.getElementById('preview');
     const sendBtn = document.getElementById('send-btn');
+    const whatsappBtn = document.getElementById('whatsapp-btn');
     const loading = document.getElementById('loading');
 
     // 🔑 SUPABASE
     const SUPABASE_URL = "https://czhtdbjkscsqsrgawobg.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aHRkYmprc2NzcXNyZ2F3b2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3OTg4NjQsImV4cCI6MjA3ODM3NDg2NH0.yPH_BrOGNbf-tZMx2zk0_xEcm0K9fyhUo2A8Ug6i3ms";
+    
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -117,17 +133,16 @@
       preview.src = URL.createObjectURL(file);
       preview.style.display = 'block';
       sendBtn.style.display = 'inline-block';
+      whatsappBtn.style.display = 'inline-block';
     });
 
-    // ☁️ Upload
+    // ☁️ Enviar para Supabase
     sendBtn.addEventListener('click', async () => {
       const file = cameraInput.files[0];
-      if (!file) {
-        alert('Nenhuma foto selecionada');
-        return;
-      }
+      if (!file) return;
 
       sendBtn.style.display = 'none';
+      whatsappBtn.style.display = 'none';
       loading.style.display = 'block';
 
       const fileName = `${Date.now()}.jpg`;
@@ -145,12 +160,31 @@
         console.error(error);
         alert('Erro ao enviar a foto');
         sendBtn.style.display = 'inline-block';
+        whatsappBtn.style.display = 'inline-block';
       } else {
         alert('Foto enviada com sucesso 🎉');
-        preview.style.display = 'none';
-        cameraInput.value = '';
+        resetar();
       }
     });
+
+    // 📲 Enviar pelo WhatsApp
+    whatsappBtn.addEventListener('click', () => {
+      const texto = encodeURIComponent(
+        'Oi! Segue minha foto do evento 📸'
+      );
+
+      window.open(
+        `https://wa.me/5511947853999?text=${texto}`,
+        '_blank'
+      );
+    });
+
+    function resetar() {
+      preview.style.display = 'none';
+      cameraInput.value = '';
+      sendBtn.style.display = 'none';
+      whatsappBtn.style.display = 'none';
+    }
   </script>
 </body>
 </html>
